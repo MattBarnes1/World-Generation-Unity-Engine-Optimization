@@ -43,7 +43,7 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 11
+  serializedVersion: 12
   m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
@@ -54,7 +54,7 @@ LightmapSettings:
     m_EnableBakedLightmaps: 0
     m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
-    serializedVersion: 10
+    serializedVersion: 12
     m_Resolution: 2
     m_BakeResolution: 40
     m_AtlasSize: 1024
@@ -62,6 +62,7 @@ LightmapSettings:
     m_AOMaxDistance: 1
     m_CompAOExponent: 0
     m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
     m_Padding: 2
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
@@ -76,10 +77,16 @@ LightmapSettings:
     m_PVRDirectSampleCount: 32
     m_PVRSampleCount: 500
     m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 500
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 0
+    m_PVRDenoiserTypeDirect: 0
+    m_PVRDenoiserTypeIndirect: 0
+    m_PVRDenoiserTypeAO: 0
     m_PVRFilterTypeDirect: 0
     m_PVRFilterTypeIndirect: 0
     m_PVRFilterTypeAO: 0
-    m_PVRFilteringMode: 0
+    m_PVREnvironmentMIS: 0
     m_PVRCulling: 1
     m_PVRFilteringGaussRadiusDirect: 1
     m_PVRFilteringGaussRadiusIndirect: 5
@@ -87,9 +94,11 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaDirect: 0.5
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
-    m_ShowResolutionOverlay: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_LightingSettings: {fileID: 907009479}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -109,6 +118,8 @@ NavMeshSettings:
     manualTileSize: 0
     tileSize: 256
     accuratePlacement: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
@@ -158,6 +169,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -169,6 +182,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -181,6 +195,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &45544169
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -199,7 +214,6 @@ GameObject:
   m_Component:
   - component: {fileID: 169013775}
   - component: {fileID: 169013774}
-  - component: {fileID: 169013773}
   - component: {fileID: 169013772}
   - component: {fileID: 169013771}
   m_Layer: 0
@@ -225,14 +239,6 @@ Behaviour:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 169013770}
   m_Enabled: 1
---- !u!92 &169013773
-Behaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 169013770}
-  m_Enabled: 1
 --- !u!20 &169013774
 Camera:
   m_ObjectHideFlags: 0
@@ -245,9 +251,10 @@ Camera:
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.1102941, g: 0.1102941, b: 0.1102941, a: 0.019607844}
   m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
-  m_GateFitMode: 2
   m_FocalLength: 50
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -314,12 +321,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 391176178}
   m_Enabled: 1
-  serializedVersion: 8
+  serializedVersion: 10
   m_Type: 1
+  m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 100
   m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
     m_Type: 0
@@ -329,6 +338,24 @@ Light:
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
   m_Cookie: {fileID: 0}
   m_DrawHalo: 0
   m_Flare: {fileID: 0}
@@ -336,12 +363,16 @@ Light:
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  m_RenderingLayerMask: 1
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &391176180
@@ -404,6 +435,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -415,6 +448,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -427,6 +461,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &586004652
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -467,6 +502,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -478,6 +515,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -490,6 +528,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &735885602
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -558,6 +597,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -569,6 +610,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -581,6 +623,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &745300680
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -669,6 +712,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -680,6 +725,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -692,6 +738,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &853630141
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -711,7 +758,6 @@ GameObject:
   - component: {fileID: 905312210}
   - component: {fileID: 905312213}
   - component: {fileID: 905312212}
-  - component: {fileID: 905312211}
   m_Layer: 0
   m_Name: Atmosphere2
   m_TagString: Untagged
@@ -733,19 +779,6 @@ Transform:
   m_Father: {fileID: 821678456}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &905312211
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 905312209}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb503933fdd35f4408ca400ca26596c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RotationSpeed: 13
 --- !u!33 &905312212
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -768,6 +801,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -779,6 +814,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -791,6 +827,68 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!850595691 &907009479
+LightingSettings:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Settings.lighting
+  serializedVersion: 3
+  m_GIWorkflowMode: 1
+  m_EnableBakedLightmaps: 0
+  m_EnableRealtimeLightmaps: 0
+  m_RealtimeEnvironmentLighting: 1
+  m_BounceScale: 1
+  m_AlbedoBoost: 1
+  m_IndirectOutputScale: 1
+  m_UsingShadowmask: 0
+  m_BakeBackend: 0
+  m_LightmapMaxSize: 1024
+  m_BakeResolution: 40
+  m_Padding: 2
+  m_TextureCompression: 1
+  m_AO: 0
+  m_AOMaxDistance: 1
+  m_CompAOExponent: 0
+  m_CompAOExponentDirect: 0
+  m_ExtractAO: 0
+  m_MixedBakeMode: 1
+  m_LightmapsBakeMode: 1
+  m_FilterMode: 1
+  m_LightmapParameters: {fileID: 15204, guid: 0000000000000000f000000000000000, type: 0}
+  m_ExportTrainingData: 0
+  m_TrainingDataDestination: TrainingData
+  m_RealtimeResolution: 2
+  m_ForceWhiteAlbedo: 0
+  m_ForceUpdates: 0
+  m_FinalGather: 0
+  m_FinalGatherRayCount: 1024
+  m_FinalGatherFiltering: 1
+  m_PVRCulling: 1
+  m_PVRSampling: 1
+  m_PVRDirectSampleCount: 32
+  m_PVRSampleCount: 500
+  m_PVREnvironmentSampleCount: 500
+  m_PVREnvironmentReferencePointCount: 2048
+  m_LightProbeSampleCountMultiplier: 4
+  m_PVRBounces: 2
+  m_PVRMinBounces: 2
+  m_PVREnvironmentMIS: 0
+  m_PVRFilteringMode: 0
+  m_PVRDenoiserTypeDirect: 0
+  m_PVRDenoiserTypeIndirect: 0
+  m_PVRDenoiserTypeAO: 0
+  m_PVRFilterTypeDirect: 0
+  m_PVRFilterTypeIndirect: 0
+  m_PVRFilterTypeAO: 0
+  m_PVRFilteringGaussRadiusDirect: 1
+  m_PVRFilteringGaussRadiusIndirect: 5
+  m_PVRFilteringGaussRadiusAO: 2
+  m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+  m_PVRFilteringAtrousPositionSigmaIndirect: 2
+  m_PVRFilteringAtrousPositionSigmaAO: 1
 --- !u!1 &1236657915
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,39 +915,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 1236657915}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9077e280f0e4a74ab40fc30b26a3fd2, type: 3}
+  m_Script: {fileID: 11500000, guid: ea4903b5671d69e46931f276d0313e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Width: 512
   Height: 512
-  TerrainOctaves: 6
-  TerrainFrequency: 0.65
-  DeepWater: 0.25
-  ShallowWater: 0.4
-  Sand: 0.45
-  Grass: 0.6
-  Forest: 0.75
-  Rock: 0.9
-  HeatOctaves: 3
-  HeatFrequency: 2
-  ColdestValue: 0.08
-  ColderValue: 0.32
-  ColdValue: 0.6
-  WarmValue: 0.75
-  WarmerValue: 0.94
-  MoistureOctaves: 4
-  MoistureFrequency: 3
-  DryerValue: 0.35
-  DryValue: 0.45
-  WetValue: 0.55
-  WetterValue: 0.7
-  WettestValue: 0.8
-  RiverCount: 40
-  MinRiverHeight: 0.5
-  MaxRiverAttempts: 1000
-  MinRiverTurns: 12
-  MinRiverLength: 15
-  MaxRiverIntersections: 2
+  NoiseOctaves: 16
+  NoiseFrequency: 0.007
+  Seed: 0
+  Persistence: 0.5
+  Lacunarity: 2
+  Amplitude: 1
+  LandHeightCutoff: 0.75
+  EquatorSizeAsPercent: 0.3
+  HeatZonesFromEquator: 2
+  EquatorHeatValue: 95
+  HeatOctaves: 6
+  HeatFrequency: 3
 --- !u!4 &1236657919
 Transform:
   m_ObjectHideFlags: 0
@@ -917,6 +999,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -928,6 +1012,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -940,6 +1025,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &1389901464
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -959,7 +1045,6 @@ GameObject:
   - component: {fileID: 1490417499}
   - component: {fileID: 1490417498}
   - component: {fileID: 1490417497}
-  - component: {fileID: 1490417500}
   m_Layer: 0
   m_Name: Atmosphere1
   m_TagString: Untagged
@@ -989,6 +1074,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1000,6 +1087,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -1012,6 +1100,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!4 &1490417499
 Transform:
   m_ObjectHideFlags: 0
@@ -1026,19 +1115,6 @@ Transform:
   m_Father: {fileID: 821678456}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1490417500
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1490417496}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb503933fdd35f4408ca400ca26596c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RotationSpeed: 9
 --- !u!1 &1662832594
 GameObject:
   m_ObjectHideFlags: 0
@@ -1071,6 +1147,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1082,6 +1160,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -1094,6 +1173,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &1662832596
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1162,6 +1242,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1173,6 +1255,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -1185,6 +1268,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &1784984562
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1204,7 +1288,6 @@ GameObject:
   - component: {fileID: 1840644970}
   - component: {fileID: 1840644969}
   - component: {fileID: 1840644968}
-  - component: {fileID: 1840644971}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -1234,6 +1317,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1245,6 +1330,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -1257,6 +1343,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!4 &1840644970
 Transform:
   m_ObjectHideFlags: 0
@@ -1271,19 +1358,6 @@ Transform:
   m_Father: {fileID: 821678456}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1840644971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1840644967}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb503933fdd35f4408ca400ca26596c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RotationSpeed: 5.5
 --- !u!1 &1977193850
 GameObject:
   m_ObjectHideFlags: 0
@@ -1330,6 +1404,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1341,6 +1417,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -1353,6 +1430,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &1977193853
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1408,36 +1486,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4db183f81ab251845b14d7f82ed17053, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Width: 512
-  Height: 512
-  TerrainOctaves: 6
-  TerrainFrequency: 1.25
-  DeepWater: 0.2
-  ShallowWater: 0.4
-  Sand: 0.5
-  Grass: 0.7
-  Forest: 0.8
-  Rock: 0.9
-  HeatOctaves: 4
-  HeatFrequency: 3
-  ColdestValue: 0.05
-  ColderValue: 0.18
-  ColdValue: 0.4
-  WarmValue: 0.6
-  WarmerValue: 0.8
-  MoistureOctaves: 4
-  MoistureFrequency: 3
-  DryerValue: 0.27
-  DryValue: 0.4
-  WetValue: 0.6
-  WetterValue: 0.8
-  WettestValue: 0.9
-  RiverCount: 40
-  MinRiverHeight: 0.6
-  MaxRiverAttempts: 1000
-  MinRiverTurns: 18
-  MinRiverLength: 20
-  MaxRiverIntersections: 2
 --- !u!1 &2084234879
 GameObject:
   m_ObjectHideFlags: 0
@@ -1484,6 +1532,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1495,6 +1545,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -1507,6 +1558,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &2084234882
 MeshFilter:
   m_ObjectHideFlags: 0
