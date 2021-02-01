@@ -36,16 +36,20 @@ public  class TextureGenerator
 	private  Color Wet = new Color(85/255f, 255/255f, 255/255f, 1);
 	private  Color Wetter = new Color(20/255f, 70/255f, 255/255f, 1);
 	private  Color Wettest = new Color(0/255f, 0/255f, 100/255f, 1);
+	private  Color Ice = Color.white;
+	private  Color Savanna = new Color(177 / 255f, 209 / 255f, 110 / 255f, 1);
+	private  Color TropicalRainforest = new Color(66 / 255f, 123 / 255f, 25 / 255f, 1);
+	private  Color Tundra = new Color(96 / 255f, 131 / 255f, 112 / 255f, 1);
+	private  Color TemperateRainforest = new Color(29 / 255f, 73 / 255f, 40 / 255f, 1);
+	private  Color Grassland = new Color(164 / 255f, 225 / 255f, 99 / 255f, 1);
+	private  Color SeasonalForest = new Color(73 / 255f, 100 / 255f, 35 / 255f, 1);
+	private  Color BorealForest = new Color(95 / 255f, 115 / 255f, 62 / 255f, 1);
+	private  Color Woodland = new Color(139 / 255f, 175 / 255f, 90 / 255f, 1);
 
 	//biome map
-	private  Color Ice = Color.white;
 	private  Color Desert = new Color(238/255f, 218/255f, 130/255f, 1);
-	private  Color Savanna = new Color(177/255f, 209/255f, 110/255f, 1);
-	private  Color TropicalRainforest = new Color(66/255f, 123/255f, 25/255f, 1);
-	private  Color Tundra = new Color(96/255f, 131/255f, 112/255f, 1);
-	private  Color TemperateRainforest = new Color(29/255f, 73/255f, 40/255f, 1);
 
-    public  Texture GetBiomeMap(int width, int height, MapData tiles)
+	public Texture GetPalletBase(int width, int height, MapData tiles)
 	{
 		var texture = new Texture2D(width, height);
 		var pixels = new Color[width * height];
@@ -54,28 +58,160 @@ public  class TextureGenerator
 		{
 			for (var y = 0; y < height; y++)
 			{
-				float value = tiles[x,y].HeightValue;
-				if (value < 0.60f)
-					pixels[x + y * width] = Color.blue;
+				switch (tiles[x, y].HeightType)
+				{
+					case HeightType.DeepWater:
+						pixels[x + y * width] = DeepColor;
+						break;
+					case HeightType.ShallowWater:
+						pixels[x + y * width] = ShallowColor;
+						break;
+					case HeightType.Sand:
+						pixels[x + y * width] = SandColor;
+						break;
+					case HeightType.Grass:
+						pixels[x + y * width] = GrassColor;
+						break;
+					case HeightType.Forest:
+						pixels[x + y * width] = ForestColor;
+						break;
+					case HeightType.Rock:
+						pixels[x + y * width] = RockColor;
+						break;
+					case HeightType.Snow:
+						pixels[x + y * width] = SnowColor;
+						break;
+				}
+			}
+		}
+
+		texture.SetPixels(pixels);
+		texture.wrapMode = TextureWrapMode.Clamp;
+		texture.Apply();
+		return texture;
+	}
+
+
+	public Texture2D GetBiomeMapTexture(int width, int height, MapData tiles)
+	{
+		var texture = new Texture2D(width, height);
+		var pixels = new Color[width * height];
+
+		for (var x = 0; x < width; x++)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				BiomeType value = tiles[x, y].BiomeType;
+
+				switch (value)
+				{
+					case BiomeType.Ice:
+						pixels[x + y * width] = Ice;
+						break;
+					case BiomeType.BorealForest:
+						pixels[x + y * width] = BorealForest;
+						break;
+					case BiomeType.Desert:
+						pixels[x + y * width] = Desert;
+						break;
+					case BiomeType.Grassland:
+						pixels[x + y * width] = Grassland;
+						break;
+					case BiomeType.SeasonalForest:
+						pixels[x + y * width] = SeasonalForest;
+						break;
+					case BiomeType.Tundra:
+						pixels[x + y * width] = Tundra;
+						break;
+					case BiomeType.Savanna:
+						pixels[x + y * width] = Savanna;
+						break;
+					case BiomeType.TemperateRainforest:
+						pixels[x + y * width] = TemperateRainforest;
+						break;
+					case BiomeType.TropicalRainforest:
+						pixels[x + y * width] = TropicalRainforest;
+						break;
+					case BiomeType.Woodland:
+						pixels[x + y * width] = Woodland;
+						break;
+				}
+
+				// Water tiles
+				if (tiles[x, y].HeightType == HeightType.DeepWater)
+				{
+					pixels[x + y * width] = DeepColor;
+				}
+				else if (tiles[x, y].HeightType == HeightType.ShallowWater)
+				{
+					pixels[x + y * width] = ShallowColor;
+				}
+
+				// draw rivers
+				/*	if (tiles[x, y].HeightType == HeightType.River)
+					{
+						float heatValue = tiles[x, y].HeatValue;
+
+						if (tiles[x, y].HeatType == HeatType.Coldest)
+							pixels[x + y * width] = Color.Lerp(IceWater, ColdWater, (heatValue) / (coldest));
+						else if (tiles[x, y].HeatType == HeatType.Colder)
+							pixels[x + y * width] = Color.Lerp(ColdWater, RiverWater, (heatValue - coldest) / (colder - coldest));
+						else if (tiles[x, y].HeatType == HeatType.Cold)
+							pixels[x + y * width] = Color.Lerp(RiverWater, ShallowColor, (heatValue - colder) / (cold - colder));
+						else
+							pixels[x + y * width] = ShallowColor;
+					}
+
+
+					// add a outline
+					if (tiles[x, y].HeightType >= HeightType.Shore && tiles[x, y].HeightType != HeightType.River)
+					{
+						if (tiles[x, y].BiomeBitmask != 15)
+							pixels[x + y * width] = Color.Lerp(pixels[x + y * width], Color.black, 0.35f);
+					}*/
+			}
+		}
+
+		texture.SetPixels(pixels);
+		texture.wrapMode = TextureWrapMode.Clamp;
+		texture.Apply();
+		return texture;
+	}
+
+
+
+
+	public Texture GetRiverTexture(int width, int height, MapData tiles)
+	{
+		var texture = new Texture2D(width, height);
+		var pixels = new Color[width * height];
+		for (var x = 0; x < width; x++)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				Tile t = tiles[x, y];
+
+				if (t.IsRiver)
+				{
+					pixels[x + y * width] = Color.red;
+
+				}
 				else
-					pixels[x + y * width] = Color.green;
+				{
+					pixels[x + y * width] = Color.clear;
+				}
 			}
 		}
 
-	
 		texture.SetPixels(pixels);
 		texture.wrapMode = TextureWrapMode.Clamp;
-
 		texture.Apply();
 		return texture;
 	}
 
-    private  Color Grassland = new Color(164/255f, 225/255f, 99/255f, 1);
-	private  Color SeasonalForest = new Color(73/255f, 100/255f, 35/255f, 1);
-	private  Color BorealForest = new Color(95/255f, 115/255f, 62/255f, 1);
-	private  Color Woodland = new Color(139/255f, 175/255f, 90/255f, 1);
 
-	public Texture2D GetHeatMapGradientTexture(int width, int height,  MapData tiles)
+
+	public Texture2D GetMoistureMapTexture(int width, int height, MapData tiles)
 	{
 		var texture = new Texture2D(width, height);
 		var pixels = new Color[width * height];
@@ -84,8 +220,20 @@ public  class TextureGenerator
 		{
 			for (var y = 0; y < height; y++)
 			{
-				pixels[x + y * width] = Color.Lerp(Color.blue, Color.red, tiles[x, y].HeatValue);
+				Tile t = tiles[x, y];
 
+				if (t.MoistureType == MoistureType.Dryest)
+					pixels[x + y * width] = Dryest;
+				else if (t.MoistureType == MoistureType.Dryer)
+					pixels[x + y * width] = Dryer;
+				else if (t.MoistureType == MoistureType.Dry)
+					pixels[x + y * width] = Dry;
+				else if (t.MoistureType == MoistureType.Wet)
+					pixels[x + y * width] = Wet;
+				else if (t.MoistureType == MoistureType.Wetter)
+					pixels[x + y * width] = Wetter;
+				else
+					pixels[x + y * width] = Wettest;
 			}
 		}
 
@@ -94,8 +242,6 @@ public  class TextureGenerator
 		texture.Apply();
 		return texture;
 	}
-
-
 	public  Texture2D GetHeatMapTexture(int width, int height, MapData myData)
 	{
 
@@ -152,7 +298,7 @@ public  class TextureGenerator
 		{
 			for (var y = 0; y < height; y++)
 			{
-				float value = myData[x, y].HeightValue;
+				float value = myData.GetHeightAtPoint(x, y);
 
 				//Set color range, 0 = black, 1 = white
 				pixels[(y * width) + x] = Color.Lerp(Color.black, Color.white, value);

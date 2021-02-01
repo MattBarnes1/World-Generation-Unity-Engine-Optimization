@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public enum HeightType
 {
@@ -55,20 +56,19 @@ public struct Tile
 	public MoistureType MoistureType;
 	public BiomeType BiomeType;
 
-	public float HeightValue;
-	public float HeatValue;
-	public float MoistureValue;
 	public int Bitmask;
 	public int BiomeBitmask;
 
 	public bool Collidable;
 	public bool FloodFilled;
+    internal float TileRNG;
 
-	//public List<River> Rivers = new List<River>();
+    //public List<River> Rivers = new List<River>();
 
-	public int RiverSize { get ;set; }
+    public int RiverSize { get ;set; }
 
-	/*public Tile()
+	public bool IsRiver { get; set; }
+    /*public Tile()
 	{
 	}
 

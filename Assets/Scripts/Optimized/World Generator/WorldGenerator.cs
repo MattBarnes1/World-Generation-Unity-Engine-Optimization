@@ -5,12 +5,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
 using WorldGeneratorFunctions;
+using static NoiseTextureMods;
 
 [Serializable]
 public partial class WorldGenerator : MonoBehaviour
@@ -29,6 +31,7 @@ public partial class WorldGenerator : MonoBehaviour
     [SerializeField]
     [Tooltip("Set this value is the offset from the x,y position in the generator.")]
 
+    [Range(1, Int32.MaxValue)]
     int Seed;
     [SerializeField]
     [Tooltip("The higher this value, the rougher the terrain.")]
@@ -75,9 +78,15 @@ public partial class WorldGenerator : MonoBehaviour
     // Our texture output (unity component)
     MeshRenderer HeightMapRenderer;
     // Our texture output (unity component)
-    MeshRenderer LandMapRenderer;
+    MeshRenderer BiomeMapRenderer;
     // Our texture output (unity component)
     MeshRenderer HeatMapRenderer;
+
+    public MeshRenderer MoistureMapRenderer;
+
+    public MeshRenderer PaletteMapRenderer { get; private set; }
+
+    private MeshRenderer SettlementMapRenderer;
     [SerializeField]
     [Range(0, 99)]
     [Tooltip("Heat Map Octaves.")]
@@ -86,6 +95,41 @@ public partial class WorldGenerator : MonoBehaviour
     [Range(0, 99)]
     [Tooltip("Heat Frequency.")]
     private float HeatFrequency;
+    [SerializeField]
+    [Range(0, 99)]
+    [Tooltip("Heat Power.")]
+    public float HeatMapPower;
+    [SerializeField]
+    [Range(0, 99)]
+    [Tooltip("Terrain Power.")]
+    public float TerrainPower;
+
+    [SerializeField]
+    [Range(0, 99)]
+    [Tooltip("Moisture Map Octaves.")]
+    private int MoistureOctaves;
+    [SerializeField]
+    [Range(0, 99)]
+    [Tooltip("Moisture Frequency.")]
+    private float MoistureFrequency;
+    [SerializeField]
+    [Range(0, 99)]
+    [Tooltip("Moisture Power.")]
+    public float MoistureMapPower;
+    [SerializeField]
+    private float MoisturePersistence;
+    [SerializeField]
+    private float MoistureAmplitude;
+    [SerializeField]
+    private int RiverCount;
+
+    private MeshRenderer RailMapManager;
+    private MeshRenderer RiverMapManager;
+    public MeshRenderer myPlanet;
+    [SerializeField]
+    private float MinRiverStartHeight;
+    [SerializeField]
+    private int SpaceBetweenRivers;
 
     void Start()
     {
@@ -93,8 +137,13 @@ public partial class WorldGenerator : MonoBehaviour
 
            // Get the mesh we are rendering our output to
            HeightMapRenderer = transform.Find("HeightTexture").GetComponent<MeshRenderer>();
-        LandMapRenderer = transform.Find("BiomeTexture").GetComponent<MeshRenderer>();
+        BiomeMapRenderer = transform.Find("BiomeTexture").GetComponent<MeshRenderer>();
         HeatMapRenderer = transform.Find("HeatTexture").GetComponent<MeshRenderer>();
+        MoistureMapRenderer = transform.Find("MoistureTexture").GetComponent<MeshRenderer>();
+        PaletteMapRenderer = transform.Find("PaletteTexture").GetComponent<MeshRenderer>();
+        SettlementMapRenderer =   transform.Find("SettlementTexture").GetComponent<MeshRenderer>();
+        RailMapManager = transform.Find("RailTexture").GetComponent<MeshRenderer>();
+        RiverMapManager = transform.Find("RiverTexture").GetComponent<MeshRenderer>();
 
         // Initialize the generator
         Initialize();
@@ -119,34 +168,35 @@ public partial class WorldGenerator : MonoBehaviour
 
         // Build our final objects based on our data
 
+        ts = Stopwatch.StartNew();
         // Render a texture representation of our map
+
         HeightMapRenderer.materials[0].mainTexture = myGenerator.GetHeightMapTexture(Width, Height, HeightData);
 
-        LandMapRenderer.materials[0].mainTexture = myGenerator.GetBiomeMap(Width, Height, HeightData);
+        HeatMapRenderer.materials[0].mainTexture = myGenerator.GetHeatMapTexture(Width, Height, HeightData);
 
-        HeatMapRenderer.materials[0].mainTexture = myGenerator.GetHeatMapGradientTexture(Width, Height, HeightData);
+        PaletteMapRenderer.materials[0].mainTexture = myGenerator.GetPalletBase(Width, Height, HeightData);
+
+        MoistureMapRenderer.materials[0].mainTexture = myGenerator.GetMoistureMapTexture(Width, Height, HeightData);
+
+        BiomeMapRenderer.materials[0].mainTexture = myGenerator.GetBiomeMapTexture(Width, Height, HeightData);
+
+        RiverMapManager.materials[0].mainTexture = myGenerator.GetRiverTexture(Width, Height, HeightData);
+
+        myPlanet.materials[0].mainTexture = BiomeMapRenderer.materials[0].mainTexture;
+
+
+
+
+        ts.Stop();
+        UnityEngine.Debug.LogWarning("Texture Generator: " + ts.ElapsedMilliseconds);
         HeightData.Dispose();
 
     }
 
-    private void CreateHeightMapNoBurst(out MapData myData)
-    {
-        myData = new MapData(Width, Height);
-        GenerateSimplexNoiseNoBurst myJob = new GenerateSimplexNoiseNoBurst() { Seed = this.Seed, Octaves = this.NoiseOctaves, Frequency = this.NoiseFrequency, Amplitude = this.Amplitude, Persistence = this.Persistence, Lacunarity = this.Lacunarity, Width = Width, Height = Height, myOutputArray = myData.HeightMapAsNativeArray(), myMaxMinArray = myData.GetMinMaxArray() };
-        var HeightMapGeneration = myJob.Schedule(Height, 32);
-        HeatMapGradientGenerator myGradientGenerator = new HeatMapGradientGenerator() { EquatorSize = EquatorSizeAsPercent * Height, Width = this.Width, HeatMapBase = myData.HeatMapAsNativeArray(), HeatZonesInSingleDirectionFromEquator = HeatZonesFromEquator, HeatZoneSize = Height - (EquatorSizeAsPercent * Height) / HeatZonesFromEquator, Seed = this.Seed, EquatorHeatValue = EquatorHeatValue };
-        var HeatMapGradientGeneration = myGradientGenerator.Schedule(Height, 32);
-        var MapGeneration = JobHandle.CombineDependencies(HeatMapGradientGeneration, HeightMapGeneration);
-
-        FindHeightMapMaxMin myMaxMin = new FindHeightMapMaxMin { myMaxMinArray = myData.GetMinMaxArray() };
-        var Handle = myMaxMin.Schedule(MapGeneration);
-        NormalizeValuesOnHeightMap normalizationJob = new NormalizeValuesOnHeightMap { Width = this.Width, myMaxMinArray = myData.GetMinMaxArray(), myHeightMap = myData.HeightMapAsNativeArray() };
-        Handle = normalizationJob.Schedule(Height, 32, Handle);
+   
 
 
-
-        Handle.Complete();
-    }
 
     private void Initialize()
     {
@@ -158,67 +208,88 @@ public partial class WorldGenerator : MonoBehaviour
                                        UnityEngine.Random.Range(0, int.MaxValue));*/
     }
 
+
+
+    public JobHandle CreateNormalizedSimplexNoiseMap(int seed, float power, int octaves, float frequency, float persistence, float amplitude, float lacunarity, int gridWidth, int gridHeight, NativeArray<float> outputArray, JobHandle jobHandle = default)
+    {
+        NativeArray<float> MinMaxArray = new NativeArray<float>(2 * gridHeight, Allocator.TempJob);
+        var Pointer = BurstCompiler.CompileFunctionPointer<NoiseTextureModifier>(new NoiseTextureModifier(NoiseTextureMods.BrownianRedNoise));
+        GenerateSimplexNoiseSpherical myGenerator = new GenerateSimplexNoiseSpherical() { Seed = seed, myModifier = Pointer, Height = Height, Power = power, Octaves = octaves, Frequency = frequency, Persistence = persistence, Lacunarity = lacunarity, Width = gridWidth, myOutputArray = outputArray, myMaxMinArray = MinMaxArray };
+        var SimplexMapGeneration = myGenerator.Schedule(Height, 32, jobHandle);
+        FindHeightMapMaxMin myMaxMin = new FindHeightMapMaxMin { myMaxMinArray = MinMaxArray };
+        NormalizeSimplexValues normalizationJob = new NormalizeSimplexValues { Width = this.Width, myMaxMinArray = MinMaxArray, SimplexMapToNormalize = outputArray };
+        return normalizationJob.Schedule(Height, 32, myMaxMin.Schedule(SimplexMapGeneration));
+    }
+
+
     // Extract data from a noise module
     private void LoadTiles(out MapData myData)
     {
         myData = new MapData(Width, Height);
-        var OtherData = myData.GetMinMaxArray();
 
-
+        //////
+        ///Batch 1
         //////
         ///Generate Height Map
-        //////
-        GenerateSimplexNoiseWithBurst myGenerator = new GenerateSimplexNoiseWithBurst() { Seed = this.Seed, Octaves = this.NoiseOctaves, Frequency = this.NoiseFrequency, Amplitude = this.Amplitude, Persistence = this.Persistence, Lacunarity = this.Lacunarity, Width = Width, Height = Height, myOutputArray = myData.HeightMapAsNativeArray(), myMaxMinArray = myData.GetMinMaxArray() };
+        var HeightMapGeneration = CreateNormalizedSimplexNoiseMap(this.Seed, TerrainPower, this.NoiseOctaves, this.NoiseFrequency, this.Persistence, this.Amplitude, this.Lacunarity, Width, Height, myData.HeightMapAsNativeArray());
+        ///Generate HeatMap;
+       
+        JobHandle HeatMapCreationJob = GenerateHeatMap(myData);
+
+        var SimplexWaterMapGeneration = CreateNormalizedSimplexNoiseMap(this.Seed << 10, MoistureMapPower, this.MoistureOctaves, this.MoistureFrequency, this.MoisturePersistence, this.MoistureAmplitude, this.Lacunarity, Width, Height, myData.MostureMapAsNativeArray());
         
         
-        var HeightMapGeneration = myGenerator.Schedule(Height, 32);
+        
+       // var AwaitHeatMapAndMoistureMap = JobHandle.CombineDependencies(SimplexWaterMapGeneration, HeatMapCreationJob);
+        //Finished Heat map and Heat map processing to continue.
+        var AwaitHeightMapAndBiomeData = JobHandle.CombineDependencies(SimplexWaterMapGeneration, HeatMapCreationJob, HeightMapGeneration);
+        //Adjust the values of the heat map based on the Height Map. TODO Add Adjustable Values
+        AdjustHeatMapValuesFromHeightmap myHeatMapAdjustment = new AdjustHeatMapValuesFromHeightmap() { HeatMap = myData.HeatMapAsNativeArray(), HeightMap = myData.HeightMapAsNativeArray() };
+        var myHeatmapAdjustmentJob = myHeatMapAdjustment.Schedule(Width * Height, 32, AwaitHeightMapAndBiomeData);
 
-        /////
-        ///Generate SimplexHeatMap;
-        ///
-
-
-
-
-        FindHeightMapMaxMin myMaxMin = new FindHeightMapMaxMin { myMaxMinArray = myData.GetMinMaxArray() };
-        NormalizeValuesOnHeightMap normalizationJob = new NormalizeValuesOnHeightMap { Width = this.Width, myMaxMinArray = myData.GetMinMaxArray(), myHeightMap = myData.HeightMapAsNativeArray() };
-        HeightMapGeneration = normalizationJob.Schedule(Height, 32, myMaxMin.Schedule(HeightMapGeneration));
-
+        NativeHashMap<RiverDistanceKey, float2> myRiverLocations = new NativeHashMap<RiverDistanceKey, float2>(RiverCount, Allocator.TempJob);
+        FindRiverStartingPointsFromHeightMapValues myRivers = new FindRiverStartingPointsFromHeightMapValues() {RiversRemaining = RiverCount, SeedID = this.Seed, HeightMap = myData.HeightMapAsNativeArray(), myRiverPositions = myRiverLocations.AsParallelWriter(), MinRiverStartHeight = this.MinRiverStartHeight, SpaceBetweenRiversDistance = this.SpaceBetweenRivers, Width = this.Width };
+        var RiverPreprocessing = myRivers.Schedule(Height, 32, AwaitHeightMapAndBiomeData);
 
 
-        NativeArray<float> HeatMapGradient = new NativeArray<float>(Width * Height, Allocator.TempJob);
-        HeatMapGradientGenerator myGradientGenerator = new HeatMapGradientGenerator() { EquatorSize = EquatorSizeAsPercent * Height, Width = this.Width, HeatMapBase = HeatMapGradient, HeatZonesInSingleDirectionFromEquator = HeatZonesFromEquator, HeatZoneSize = Height - (EquatorSizeAsPercent * Height) / HeatZonesFromEquator, Seed = this.Seed, EquatorHeatValue = EquatorHeatValue };
-        var HeatMapGradientGeneration = myGradientGenerator.Schedule(Height, 32);
-        var MapBatch1Generation = JobHandle.CombineDependencies(HeatMapGradientGeneration, HeightMapGeneration);
+        AdjustMoistureMapFromHeightMapValues myMoistureValueAdjuster = new AdjustMoistureMapFromHeightMapValues() { HeightMap = myData.HeightMapAsNativeArray(), MoistureMap = myData.MostureMapAsNativeArray() };
+        var myMoistureAdjusterJob = myMoistureValueAdjuster.Schedule(Width * Height, 32, RiverPreprocessing);
 
+
+        var MapGenerationJob = JobHandle.CombineDependencies(myMoistureAdjusterJob, myHeatmapAdjustmentJob);
+        MapGenerationJob.Complete();
         //////
         ///Batch 2
         //////
 
-        NativeArray<float> HeatMapSimplex = new NativeArray<float>(Width * Height, Allocator.TempJob);
-        GenerateSimplexNoiseWithBurst myHeatMapSimplexGenerator = new GenerateSimplexNoiseWithBurst() { Seed = this.Seed , Octaves = this.HeatOctaves, Frequency = this.HeatFrequency, Amplitude = this.Amplitude, Persistence = this.Persistence, Lacunarity = this.Lacunarity, Width = Width, Height = Height, myOutputArray = HeatMapSimplex, myMaxMinArray = myData.GetMinMaxArray() };
-        var SimplexHeatMapGeneration = myHeatMapSimplexGenerator.Schedule(Height, 32, MapBatch1Generation);
-        FindHeightMapMaxMin myHeatyMaxMin = new FindHeightMapMaxMin { myMaxMinArray = myData.GetMinMaxArray() };
-        var MapBatchGeneration2 = myHeatyMaxMin.Schedule(SimplexHeatMapGeneration);
-        NormalizeValuesOnHeightMap normalizationHeatJob = new NormalizeValuesOnHeightMap { Width = this.Width, myMaxMinArray = myData.GetMinMaxArray(), myHeightMap = HeatMapGradient };
-        MapBatchGeneration2 = normalizationHeatJob.Schedule(Height, 32, MapBatchGeneration2);
-        BlendMultiplyJob myBlendJob = new BlendMultiplyJob() { NoiseSource1 = HeatMapGradient, NoiseSource2 = HeatMapSimplex , Width = Width, Output = myData.HeatMapAsNativeArray() };
-
-        MapBatchGeneration2 = myBlendJob.Schedule(Height, 32, MapBatchGeneration2);
 
 
-
-        MapBatchGeneration2 = JobHandle.CombineDependencies(MapBatch1Generation, MapBatchGeneration2);
-
-
-
+        DigRiversOutJob myRiversToDig = new DigRiversOutJob() { myRiverPositions = myRiverLocations.GetValueArray(Allocator.TempJob), MinRiverStartHeight = this.MinRiverStartHeight, RiverMap = myData.RiverMapAsNativeArray(), SpaceBetweenRiversDistance = this.SpaceBetweenRivers, Width = this.Width };
+        var Rivers = myRiversToDig.Schedule(myRiverLocations.Count(), 1);
+        Rivers.Complete();
 
 
-        MapBatchGeneration2.Complete();
-        HeatMapGradient.Dispose();
-        HeatMapSimplex.Dispose();
+        myRiverLocations.Dispose();
     }
 
+    private JobHandle GenerateHeatMap(MapData myData)
+    { 
+        //Gradiant Map
+        NativeArray<float> HeatMapGradient = new NativeArray<float>(Width * Height, Allocator.TempJob);
+        GradientGenerator myGradientGenerator = new GradientGenerator() { EquatorSize = (int)Math.Floor(EquatorSizeAsPercent * Height), Width = this.Width, Height = this.Height, HeatMapBase = HeatMapGradient };
+        var HeatMapGradientGeneration = myGradientGenerator.Schedule(Height, 32);
+
+        //Simplex Map
+        var HeatMapSimplex = new NativeArray<float>(Width * Height, Allocator.TempJob);
+        var SimplexHeatMapGeneration = CreateNormalizedSimplexNoiseMap(this.Seed << 1, HeatMapPower, this.HeatOctaves, this.HeatFrequency, this.Persistence, this.Amplitude, this.Lacunarity, Width, Height, HeatMapSimplex);
+        var AwaitGradientAndSimplexHeatMaps = JobHandle.CombineDependencies(HeatMapGradientGeneration, SimplexHeatMapGeneration);
+
+        //Merge Heat Simplex Map and Gradient Map with blend Job
+        BlendMultiplyAndDeallocateJob myBlendJob = new BlendMultiplyAndDeallocateJob() { NoiseSource1 = HeatMapGradient, NoiseSource2 = HeatMapSimplex, Width = Width, Output = myData.HeatMapAsNativeArray() };
+
+
+        return myBlendJob.Schedule(Width * Height, 32, AwaitGradientAndSimplexHeatMaps);
+    }
 
 
 }
